@@ -1,0 +1,79 @@
+/* style.css */
+.progress-container {
+  width: 100%;
+  background-color: #f3f3f3;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+}
+
+.project-container {
+  display: flex;
+}
+
+.todo-list {
+  width: 45%;
+}
+
+.accomplishment {
+  width: 60%;
+  text-align: center;
+}
+
+#task-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+#task-list li {
+  margin-bottom: 10px;
+}
+
+.task-checkbox {
+  margin-right: 10px;
+}
+
+.done {
+  text-decoration: line-through;
+}
+
+.block {
+  display: inline-block;
+  width: 50px; /* Adjust as needed */
+  height: 100%; /* Match the height of the accomplishment image */
+  background-color: #ccc;
+  margin: 0;
+  opacity: 0; /* Initially hidden */
+}
+
+.completed .block {
+  opacity: 1; /* Revealed when completed */
+}
+
+/* Update the CSS to gradually remove the white blocks */
+.completed .block {
+  opacity: 0; /* Fade out when completed */
+  transition: opacity 0.5s ease; /* Smooth transition */
+}
+
+body {
+  background-color: #f8f9fa;
+}
+
+.container {
+  max-width: 800px;
+}
+
+.progress-container {
+  margin-bottom: 20px;
+}
+
+.progress-bar {
+  background-color: #28a745;
+  height: 20px;
+  width: 0;
+}
+
+.done {
+  text-decoration: line-through;
+}
+
