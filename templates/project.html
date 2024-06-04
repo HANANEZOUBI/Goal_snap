@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Project Page</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+      .accomplishment table {
+        border-collapse: collapse;
+        border-spacing: 0;
+        width: 500px;
+      }
+      .accomplishment td {
+        padding: 0;
+        margin: 0;
+      }
+      .accomplishment img {
+        display: none;
+        max-width: 100%;
+      }
+      .progress-container {
+        margin-bottom: 20px;
+      }
+      .progress-bar {
+        background-color: #28a745;
+        height: 20px;
+        width: 0;
+      }
+      .done {
+        text-decoration: line-through;
+      }
+    </style>
+  </head>
+  <body class="container mt-5">
+    <h1 class="mb-4">Welcome to the Project Page</h1>
+    {% if username %}
+    <p>Hi, {{ username }}!</p>
+    <p><a href="{{ url_for('logout') }}" class="btn btn-primary">Log Out</a></p>
+    {% endif %}
+    <div class="progress-container">
+      <div class="progress">
+        <div class="progress-bar" id="progress-bar"></div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="todo-list">
+          <h2>To-Do List</h2>
+          <ul id="task-list" class="list-group">
+            {% for task in tasks %}
+            <li class="list-group-item">
+              <input
+                type="checkbox"
+                class="task-checkbox"
+                data-id="{{ loop.index0 }}"
+                {%
+                if
+                task.done
+                %}checked{%
+                endif
+                %}
+              />
+              <span {% if task.done %}class="done" {% endif %}
+                >{{ task.title }}</span
+              >
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="accomplishment">
+          <h2>Accomplishment</h2>
+          <table class="table table-bordered">
+            <tbody id="accomplishment-images"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="mt-5">
+      <h2>Add a New Task</h2>
+      <form id="add-task-form">
+        <div class="form-group">
+          <label for="task-title">Task Title</label>
+          <input
+            type="text"
+            class="form-control"
+            id="task-title"
+            name="title"
+            required
+          />
+        </div>
+        <button type="submit" class="btn btn-primary">Add Task</button>
+      </form>
+    </div>
+
+    <script>
+      $(document).ready(function () {
+        $(".accomplishment img").hide();
+        updateProgress();
+
+        $(".task-checkbox").change(function () {
+          var taskId = $(this).data("id");
+          var taskStatus = $(this).is(":checked");
+          $.post(
+            "{{ url_for('update_task') }}",
+            { task_id: taskId, task_status: taskStatus },
+            function (data) {
+              if (data.success) {
+                updateProgress();
+              }
+            }
+          );
+        });
+
+        $("#add-task-form").submit(function (event) {
+          event.preventDefault();
+
+          var formData = $(this).serialize();
+          $.post({
+            url: "{{ url_for('add_task') }}",
+            data: formData,
+            success: function (data) {
+              if (data.success) {
+                location.reload();
+              } else {
+                alert("Error adding task.");
+              }
+            },
+          });
+        });
+      });
+
+      function updateProgress() {
+        var totalTasks = $(".task-checkbox").length;
+        var completedTasks = $(".task-checkbox:checked").length;
+        var progress = (completedTasks / totalTasks) * 100;
+        $("#progress-bar").css("width", progress + "%");
+        updateAccomplishment(completedTasks, totalTasks);
+      }
+
+      function updateAccomplishment(completedTasks, totalTasks) {
+        var imagesContainer = $("#accomplishment-images");
+        imagesContainer.empty();
+
+        var imagesPerTask = Math.ceil(12 / totalTasks);
+        var imagesAdded = 0;
+        var tr;
+        for (var i = 1; i <= completedTasks; i++) {
+          for (var j = 1; j <= imagesPerTask; j++) {
+            if (imagesAdded >= 12) break;
+            var img = $("<img>");
+            img.attr(
+              "src",
+              "../static/completed/" + ((i - 1) * imagesPerTask + j) + ".jpg"
+            );
+            var cell = $("<td>").append(img);
+
+            if (imagesAdded % 4 === 0) {
+              tr = $("<tr>");
+              imagesContainer.append(tr);
+            }
+
+            tr.append(cell);
+            img.show();
+            imagesAdded++;
+          }
+        }
+
+        if (totalTasks !== Math.floor(Math.sqrt(totalTasks)) ** 2) {
+          var lastRow = imagesContainer.find("tr:last");
+          if (completedTasks !== totalTasks) {
+            lastRow.find("td:last").hide();
+          } else {
+            lastRow.find("td:last").show();
+          }
+        }
+      }
+    </script>
+  </body>
+</html>
+
