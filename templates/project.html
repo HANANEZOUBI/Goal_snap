@@ -72,6 +72,12 @@
               <span {% if task.done %}class="done" {% endif %}
                 >{{ task.title }}</span
               >
+              <button
+                class="btn btn-danger btn-sm delete-task"
+                data-id="{{ loop.index0 }}"
+              >
+                X
+              </button>
             </li>
             {% endfor %}
           </ul>
@@ -124,7 +130,6 @@
 
         $("#add-task-form").submit(function (event) {
           event.preventDefault();
-
           var formData = $(this).serialize();
           $.post({
             url: "{{ url_for('add_task') }}",
@@ -137,6 +142,21 @@
               }
             },
           });
+        });
+
+        $(".delete-task").click(function () {
+          var taskId = $(this).data("id");
+          $.post(
+            "{{ url_for('delete_task') }}",
+            { task_id: taskId },
+            function (data) {
+              if (data.success) {
+                location.reload();
+              } else {
+                alert("Error deleting task.");
+              }
+            }
+          );
         });
       });
 
@@ -151,7 +171,6 @@
       function updateAccomplishment(completedTasks, totalTasks) {
         var imagesContainer = $("#accomplishment-images");
         imagesContainer.empty();
-
         var imagesPerTask = Math.ceil(12 / totalTasks);
         var imagesAdded = 0;
         var tr;
@@ -164,18 +183,15 @@
               "../static/completed/" + ((i - 1) * imagesPerTask + j) + ".jpg"
             );
             var cell = $("<td>").append(img);
-
             if (imagesAdded % 4 === 0) {
               tr = $("<tr>");
               imagesContainer.append(tr);
             }
-
             tr.append(cell);
             img.show();
             imagesAdded++;
           }
         }
-
         if (totalTasks !== Math.floor(Math.sqrt(totalTasks)) ** 2) {
           var lastRow = imagesContainer.find("tr:last");
           if (completedTasks !== totalTasks) {
