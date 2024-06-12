@@ -37,19 +37,19 @@ def signup():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        
+
         users = load_users()
-        
+
         if username in users:
             flash('Username already exists!', 'danger')
             return redirect(url_for('signup'))
-        
+
         users[username] = password
         save_users(users)
-        
+
         flash('You have successfully signed up!', 'success')
         return redirect(url_for('login'))
-    
+
     return render_template('signup.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -57,17 +57,17 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        
+
         users = load_users()
-        
+
         if username not in users or users[username] != password:
             flash('Invalid username or password!', 'danger')
             return redirect(url_for('login'))
-        
+
         session['username'] = username
         flash('You have successfully logged in!', 'success')
         return redirect(url_for('project'))
-    
+
     return render_template('login.html')
 
 @app.route('/project')
@@ -101,6 +101,18 @@ def add_task():
         return jsonify({'success': True})
     return jsonify({'success': False}), 403
 
+@app.route('/delete_task', methods=['POST'])
+def delete_task():
+    if 'username' in session:
+        task_id = int(request.form['task_id'])
+        tasks = load_tasks()
+        if 0 <= task_id < len(tasks):
+            tasks.pop(task_id)
+            save_tasks(tasks)
+            return jsonify({'success': True})
+        return jsonify({'success': False}), 404
+    return jsonify({'success': False}), 403
+
 @app.route('/logout')
 def logout():
     session.pop('username', None)
@@ -108,4 +120,5 @@ def logout():
     return redirect(url_for('home'))
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port="8080")
+
